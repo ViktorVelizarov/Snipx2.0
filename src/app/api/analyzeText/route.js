@@ -1,26 +1,36 @@
 import OpenAI from "openai";
+import { z } from "zod";
+import { zodResponseFormat } from "openai/helpers/zod";
 
 const openai = new OpenAI({
-  apiKey: "sk-rB7ji0oYrLopk4K32U8FHKX23DS2EA1o4Q2PIWthD2T3BlbkFJiIu-n6XrsFFhCNgRPBPkp5sF0A1GbU5L8CiDeS-GQA",
+  apiKey: process.env.OPENAI_API_KEY,
+});
+
+
+const ResultFormat = z.object({
+  green: z.array(z.string()),
+  orange: z.array(z.string()),
+  red: z.array(z.string()),
 });
 
 export async function POST(req) {
   const { text } = await req.json();
 
   try {
-    const promptText = `Summarize the following daily report into a concise analysis for a manager. Highlight the main pain points and successes, using the indicators 🟢 for positive points, 🟠 for neutral points and 🔴 for negative points. Organize the summary by key areas, and ensure each sentence begins with the appropriate indicator. Focus on providing actionable insights and overall progress. The concise analysis can not be longer than 6 bullet points.: "${text}"`;
+    const promptText = `Summarize the following daily report into a concise analysis for a manager. Highlight the main pain points and successes, using the indicators 🟢 for positive points, 🟠 for neutral points and 🔴 for negative points. Organize the summary by key areas, and ensure each sentence begins with the appropriate indicator. Focus on providing actionable insights and overall progress. The concise analysis can not be longer than 5 bullet points and each bullet point is also concise, short and clear. Return the result in the given JSON format: "${text}"`;
 
     const completion = await openai.chat.completions.create({
-      model: "gpt-4o",
+      model: "gpt-4o-mini",
       messages: [{ role: "system", content: promptText }],
-
+      response_format: zodResponseFormat(ResultFormat, "result_format"),
     });
 
     const result = completion.choices[0].message.content;
+    console.log("result:")
     console.log(result)
 
 
-    return new Response(JSON.stringify({ result }), {
+    return new Response(result, {
       status: 200,
       headers: {
         'Content-Type': 'application/json',
