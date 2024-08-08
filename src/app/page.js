@@ -1,6 +1,11 @@
-"use client"
+"use client";
 
 import { useState } from "react";
+import dynamic from "next/dynamic";
+import 'react-quill/dist/quill.snow.css'; // Import the styles
+
+// Dynamically import React Quill to prevent issues with server-side rendering
+const ReactQuill = dynamic(() => import('react-quill'), { ssr: false });
 
 export default function Home() {
   const [inputText, setInputText] = useState("");
@@ -25,12 +30,11 @@ export default function Home() {
     <main className="flex min-h-screen flex-col items-center p-24">
       <h1>SnipX 2.0</h1>
       <form onSubmit={handleSubmit} className="flex flex-col items-center">
-        <input
-          type="text"
+        <ReactQuill
           value={inputText}
-          onChange={(e) => setInputText(e.target.value)}
+          onChange={setInputText}
           placeholder="Enter text here"
-          className="p-2 border border-gray-300 rounded"
+          className="w-full max-w-lg p-2 border border-gray-300 rounded"
         />
         <button type="submit" className="mt-4 p-2 bg-blue-500 text-white rounded">
           Submit
